@@ -8,9 +8,13 @@ const qr = require('qr-image')
 const Jimp = require('jimp')
 const { Telegraf } = require('telegraf')
 const bot = new Telegraf(token)
-const { STATE1, STATE2 } = [0, 1]
 const db = sqlite.open({filename: "data.db", mode: sqlite3.OPEN_READWRITE, driver: sqlite3.Database})
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
+
+const help_msg = `
+/encode - command to create QR code.
+You can send me a photo 
+`
 
 const createTable = `
 CREATE TABLE IF NOT EXISTS users (
