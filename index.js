@@ -12,8 +12,8 @@ const db = sqlite.open({filename: "data.db", mode: sqlite3.OPEN_READWRITE, drive
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
 
 const help_msg = `
-/encode - command to create QR code.
-You can send me a photo 
+<b>/encode - command to create QR code.
+Send me photo to decipher it</b>
 `
 
 const createTable = `
@@ -153,8 +153,12 @@ function downloadFile(link, ctx)
 
 bot.start((ctx) => {
     var chat_id = ctx.chat.id
-    // ctx.reply('Hello')
     start_msg(ctx.message)
+})
+
+bot.help((ctx) => {
+    var chat_id = ctx.chat.id
+    ctx.reply(help_msg, {reply_to_message_id: ctx.message.message_id, parse_mode: 'HTML'})
 })
 
 bot.on('message', (ctx) => {
