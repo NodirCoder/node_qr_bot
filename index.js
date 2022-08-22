@@ -1,13 +1,13 @@
-const token = '5033479735:AAGjhQ1poujYB2u56Gi1O9bei_l-3HtGkSM';
+const token = '2038030257:AAFz2Rlf9p5PjDFV8DtVJSLCiuHgyC3CVG8';
 const https = require('https'); // or 'https' for https:// URLs
 const fs = require('fs');
 const sqlite = require('sqlite')
 const sqlite3 = require('sqlite3')
 const qrcode = require('qrcode-reader')
+const qr = require('qr-image')
 const Jimp = require('jimp')
 const { Telegraf } = require('telegraf')
 const bot = new Telegraf(token)
-const { Encoder, QRByte } = require('@nuintun/qrcode')
 const { STATE1, STATE2 } = [0, 1]
 const db = sqlite.open({filename: "data.db", mode: sqlite3.OPEN_READWRITE, driver: sqlite3.Database})
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
@@ -58,7 +58,7 @@ function start_msg(msg)
 }
 
 
-function checkState(msg, ctx) 
+function checkState(msg) 
 {
     var user_id = msg.from.id
     db.then(db => {
@@ -68,9 +68,10 @@ function checkState(msg, ctx)
                 qr_encode(msg)
                 bot.telegram.sendPhoto(
                     user_id,
-                    {source: './photos/qrcode.jpg'}, 
-                    {caption: '<b>Decoded by @ksarp_qr_bot</b>', parse_mode: 'HTML'}
-                );
+                    {source: './photos/qrcode.png'}, 
+                    {caption: '<b>Created by @ksarp_qr_bot</b>', parse_mode: 'HTML', 
+                    reply_to_message_id: msg.message_id}
+                ).catch(err => console.log(err))
                 // ctx.replyWithPhoto({source: './photos/qrcode.jpg'})
                 changeState(user_id, 0)
             }
@@ -88,12 +89,8 @@ function changeState(user_id, state)
 
 function qr_encode(msg)
 {
-    var qr_e = new Encoder()
-    qr_e.write(new QRByte(msg.text))
-    qr_e.make()
-    var data = qr_e.toDataURL().split(',')[1]
-    var buffer = new Buffer(data, 'base64')
-    fs.writeFileSync('photos/qrcode.jpg', buffer)
+    var qr_png = qr.image(msg.text, { type: 'png', size: 50 })
+    qr_png.pipe(fs.createWriteStream('./photos/qrcode.png'))
 }
 
 function qr_decode(msg, filename) 
@@ -162,7 +159,7 @@ bot.on('message', (ctx) => {
 
     if(ctx.message.photo != undefined) {
         var index = ctx.update.message.photo.length - 1
-        delay(2500);
+        // delay(2500);
         ctx.telegram.getFileLink(ctx.update.message.photo[index]).then(v => {
             console.log(v.href);
             downloadFile(v.href, ctx); 
@@ -171,8 +168,9 @@ bot.on('message', (ctx) => {
         changeState(ctx.from.id, 1)
         ctx.reply('<b>Send me a text or link</b>', {reply_to_message_id: ctx.message.message_id, parse_mode: 'HTML'})
     } else {
-        checkState(ctx.message, ctx)
+        checkState(ctx.message)
     }
 })
 
+console.log('started!')
 bot.launch()
