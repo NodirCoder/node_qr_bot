@@ -1,4 +1,4 @@
-const token = '2038030257:AAFz2Rlf9p5PjDFV8DtVJSLCiuHgyC3CVG8';
+const token = 'YOUR_TOKEN';
 const https = require('https'); // or 'https' for https:// URLs
 const fs = require('fs');
 const sqlite = require('sqlite')
